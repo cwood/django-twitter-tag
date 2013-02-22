@@ -5,6 +5,8 @@ import logging
 from django import template
 from django.conf import settings
 from django.core.cache import cache
+import rfc822
+import calendar
 
 from twitter import Twitter, OAuth, TwitterError
 from classytags.core import Tag, Options
@@ -36,7 +38,8 @@ class BaseTwitterTag(Tag):
         """ Apply the local presentation logic to the fetched data."""
         tweet = urlize_tweet(expand_tweet_urls(tweet))
         # parses created_at "Wed Aug 27 13:08:45 +0000 2008"
-        tweet['datetime'] = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
+        tweet['datetime'] = datetime.fromtimestamp(
+            calendar.timegm(rfc822.parsedate(tweet['created_at'])))
         return tweet
 
     def render_tag(self, context, **kwargs):
